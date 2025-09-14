@@ -2,6 +2,9 @@
 
 set -e
 
+# Add npm global directory to PATH
+export PATH="/home/nextjs/.npm-global/bin:$PATH"
+
 echo "Starting MetaMCP services..."
 
 # Function to wait for postgres

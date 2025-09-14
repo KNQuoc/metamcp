@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      # Railway provides DATABASE_URL automatically for PostgreSQL
+      DATABASE_URL: ${DATABASE_URL}
+      
+      # Application configuration
+      APP_URL: ${RAILWAY_STATIC_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${RAILWAY_STATIC_URL:-http://localhost:3000}
+      
+      # Auth configuration
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      
+      # Set clean PATH and HOME for npm
+      PATH: /home/nextjs/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      HOME: /home/nextjs
+      
+      # Railway port
+      PORT: ${PORT:-3000}
+    command: >
+      bash -c "
+        mkdir -p /home/nextjs/.npm-global &&
+        npm config set prefix '/home/nextjs/.npm-global' &&
+        npm install -g @jinzcdev/leetcode-mcp-server &&
+        ./docker-entrypoint.sh
+      "

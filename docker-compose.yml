@@ -6,8 +6,18 @@ services:
     env_file:
       - .env
     ports:
-      - "12008:12008"
+      - "${PORT:-12008}:${PORT:-12008}"
+    command: >
+      bash -c "
+        mkdir -p /home/nextjs/.npm-global &&
+        npm config set prefix '/home/nextjs/.npm-global' &&
+        npm install -g @jinzcdev/leetcode-mcp-server &&
+        ./docker-entrypoint.sh
+      "
     environment:
+      # Set clean PATH and HOME for npm
+      PATH: /home/nextjs/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      HOME: /home/nextjs
       # Postgres connection details
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}

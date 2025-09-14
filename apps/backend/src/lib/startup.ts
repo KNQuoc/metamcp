@@ -1,14 +1,51 @@
-import { ServerParameters } from "@repo/zod-types";
+import { McpServerTypeEnum, ServerParameters } from "@repo/zod-types";
 
 import { mcpServersRepository, namespacesRepository } from "../db/repositories";
 import { metaMcpServerPool } from "./metamcp";
 import { convertDbServerToParams } from "./metamcp/utils";
 
 /**
+ * Add default MCP servers if they don't exist
+ */
+async function addDefaultMcpServers() {
+  try {
+    const defaultServers = [
+      {
+        name: "leetcode-server",
+        description: "LeetCode MCP Server for accessing LeetCode problems and solutions",
+        type: McpServerTypeEnum.Enum.STDIO,
+        command: "npx",
+        args: ["@jinzcdev/leetcode-mcp-server"],
+        env: {},
+        user_id: null, // Public server
+      },
+    ];
+
+    for (const serverConfig of defaultServers) {
+      // Check if server already exists
+      const existingServer = await mcpServersRepository.findByName(serverConfig.name);
+      
+      if (!existingServer) {
+        console.log(`Creating default MCP server: ${serverConfig.name}`);
+        await mcpServersRepository.create(serverConfig);
+        console.log(`✅ Created default MCP server: ${serverConfig.name}`);
+      } else {
+        console.log(`Default MCP server already exists: ${serverConfig.name}`);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Error adding default MCP servers:", error);
+  }
+}
+
+/**
  * Startup function to initialize idle servers for all namespaces and all MCP servers
  */
 export async function initializeIdleServers() {
   try {
+    // First, add default MCP servers
+    await addDefaultMcpServers();
+    
     console.log(
       "Initializing idle servers for all namespaces and all MCP servers...",
     );
